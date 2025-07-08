@@ -1,0 +1,87 @@
+/* dashboard.css */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #ecf0f3;
+  color: #1a1a1a;
+}
+
+.container {
+  max-width: 4000px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  min-height: 100vh;
+  font-size: 5rem; 
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 10px 10px 0 0;
+}
+
+nav a {
+  font-size: 1rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.section-title {
+  margin-top: 2rem;
+  font-size: 5rem;
+  font-weight: 600;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Wider cards */
+  gap: 2rem;
+}
+
+.card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  font-size: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.loading {
+  color: #777;
+}
+
+header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+ul {
+  padding-left: 1.5rem;
+  font-size: 3rem;
+}

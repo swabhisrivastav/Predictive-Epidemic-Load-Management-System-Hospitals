@@ -1,0 +1,47 @@
+/* src/components/Navbar.css */
+.navbar-header {
+  background-color: #007bff;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-title {
+  margin: 0;
+  font-size: 3rem;
+}
+
+.navbar-links a {
+  margin-left: 1.2rem;
+  color: rgb(10, 9, 9);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.3s;
+  font-size: 3rem;
+}
+
+.navbar-links a:hover {
+  opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+  .navbar-header {
+  box-shadow: 0 2px 4px rgba(4, 3, 3, 0.1);
+}
+
+.navbar-links a {
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+}
+
+.navbar-links a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+}

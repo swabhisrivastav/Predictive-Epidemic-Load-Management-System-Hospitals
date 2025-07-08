@@ -1,0 +1,24 @@
+#Web framework
+fastapi
+uvicorn[standard]
+
+#Database 
+sqlalchemy
+pydantic
+
+
+#ML & Data Science
+scikit-learn
+pandas
+numpy
+joblib
+matplotlib
+seaborn
+
+# Time Series Forecasting 
+prophet
+statsmodels
+
+# Others 
+python-dotenv
+
