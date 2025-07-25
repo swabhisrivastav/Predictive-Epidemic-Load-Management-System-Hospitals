@@ -1,57 +1,95 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const Sidebar = () => {
+  const [activeItem, setActiveItem] = useState("home");
+
+  // Function to determine active item based on current URL
+  const getActiveItemFromUrl = () => {
+    const path = window.location.pathname;
+    if (path === "/national") return "national";
+    if (path === "/district") return "district";
+    if (path === "/hospital") return "hospital";
+    if (path === "/AddResource") return "resources";
+    return "home"; // default to home
+  };
+
+  // Set active item based on current URL when component mounts
+  useEffect(() => {
+    setActiveItem(getActiveItemFromUrl());
+  }, []);
+
+  const menuItems = [
+    { id: "home", label: "Home", icon: "🏠", href: "/" },
+    { id: "national", label: "National Trend", icon: "📊", href: "/national" },
+    { id: "district", label: "District Trend", icon: "🏙️", href: "/district" },
+    { id: "hospital", label: "My Hospital", icon: "🏥", href: "/hospital" },
+    { id: "resources", label: "Add Resources", icon: "⚕️", href: "/AddResource" }
+  ];
+
   return (
-    <div
-      id="sidenav-1"
-      className="sidenav"
-      data-mdb-sidenav-init
-      data-mdb-color="dark"
-      role="navigation"
-      data-mdb-hidden="false"
-      data-mdb-accordion="true"
-      style={{
-        minHeight: "100vh",
-        background: "#ffffff",
-        padding: "1.5rem 1rem",
-        width: "700px",
-        boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: 1000
-      }}
-    >
-      {/* Sidebar Title */}
-      <div className="mb-4" style={{ marginTop: "70px" }}>
-        <h4 style={{ fontWeight: "bold", color: "#0d6efd",fontSize: "3rem" }}>
-           Epidemic Load<br />Management System
-        </h4>
+    <div className="fixed left-0 top-0 h-screen w-80 bg-gradient-to-b from-slate-800 to-slate-900 shadow-2xl z-[9999]">
+      {/* Header */}
+      <div className="p-6 border-b border-slate-700">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
+            <span className="text-white font-bold text-lg">⚕</span>
+          </div>
+          <div>
+            <h1 className="text-white font-bold text-lg leading-tight">
+              Epidemic Load
+            </h1>
+            <p className="text-slate-400 text-sm">Management System</p>
+          </div>
+        </div>
       </div>
 
-      {/* Sidebar Links */}
-      <ul className="sidenav-menu list-unstyled">
-        <li className="sidenav-item mb-3" style={{ marginBottom: "4rem" }}>
-          <a className="sidenav-link" href="/" style={{ color: "#333", fontSize: "3rem" ,marginBottom: "4rem"}}>
-            <i className="fas fa-home fa-fw me-3"></i> Home
-          </a>
-        </li>
-        <li className="sidenav-item mb-3" style={{ marginBottom: "3rem" }}>
-          <a className="sidenav-link" href="/national" style={{ color: "#333", fontSize: "3rem" }}>
-            <i className="fas fa-chart-line fa-fw me-3"></i> National Trend
-          </a>
-        </li>
-        <li className="sidenav-item mb-3" style={{ marginBottom: "1rem" }}>
-          <a className="sidenav-link" href="/district" style={{ color: "#333", fontSize: "3rem" }}>
-            <i className="fas fa-city fa-fw me-3"></i> District Trend
-          </a>
-        </li>
-        <li className="sidenav-item mb-3" style={{ marginBottom: "1rem" }}>
-          <a className="sidenav-link" href="/hospital" style={{ color: "#333", fontSize: "3rem" }}>
-            <i className="fas fa-hospital fa-fw me-3"></i> My Hospital
-          </a>
-        </li>
-      </ul>
+      {/* Navigation */}
+      <nav className="mt-8 px-4">
+        <ul className="space-y-2">
+          {menuItems.map((item) => (
+            <li key={item.id}>
+              <a
+                href={item.href}
+                onClick={() => {
+                  setActiveItem(item.id);
+                  // Update active item after navigation
+                  setTimeout(() => {
+                    setActiveItem(getActiveItemFromUrl());
+                  }, 100);
+                }}
+                className={`
+                  flex items-center px-4 py-3 rounded-lg transition-all duration-200 group
+                  ${activeItem === item.id
+                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                  }
+                `}
+              >
+                <span className="text-xl mr-3 transition-transform duration-200 group-hover:scale-110">
+                  {item.icon}
+                </span>
+                <span className="font-medium">{item.label}</span>
+                {activeItem === item.id && (
+                  <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Footer */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
+        <div className="flex items-center space-x-3 text-slate-400">
+          <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center">
+            <span className="text-xs font-semibold text-white">U</span>
+          </div>
+          <div className="text-sm">
+            <p className="font-medium text-white">User Dashboard</p>
+            <p className="text-xs text-slate-500">Healthcare System</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

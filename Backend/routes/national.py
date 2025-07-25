@@ -1,17 +1,23 @@
 from fastapi import APIRouter
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 import io
 import base64
 import requests
+import os
+from dotenv import load_dotenv
 
 router = APIRouter()
 
 @router.get("/national/summary")
 def get_national_summary():
     url = "https://api.api-ninjas.com/v1/covid19?country=India"
-    headers = {"X-Api-Key": "kuk994yIHFlDNzO39qCffQ==4tsspAbJbD6OWZB9"}  
+    load_dotenv()
+    API_KEY = os.getenv("NATIONAL_API_KEY")
+    headers = {"X-Api-Key": "API_KEY"}  
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
@@ -76,57 +82,56 @@ def fig_to_base64(fig):
     buf.seek(0)
     return base64.b64encode(buf.read()).decode('utf-8')
 
-@router.get("/national/plot1")
-def plot_new_cases_bar():
+@router.get("/national/plots")
+def get_all_national_plots():
     df = fetch_india_covid_data()
     df_last_30 = df.tail(30)
-    fig, ax = plt.subplots(figsize=(14, 6))
-    ax.bar(df_last_30["Date"], df_last_30["New Cases"], color='steelblue')
-    ax.set_title("Daily New COVID-19 Cases (Last 30 Days)")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("New Cases")
-    ax.tick_params(axis='x', rotation=45)
-    plt.tight_layout()
-    return {"image_base64": fig_to_base64(fig)}
 
-@router.get("/national/plot2")
-def plot_total_vs_new():
-    df = fetch_india_covid_data()
-    fig, ax1 = plt.subplots(figsize=(14, 6))
-    ax1.plot(df["Date"], df["Total Cases"], color="orange")
-    ax1.set_ylabel("Total Cases", color="orange")
-    ax2 = ax1.twinx()
-    ax2.plot(df["Date"], df["New Cases"], color="steelblue", alpha=0.6)
-    ax2.set_ylabel("New Cases", color="steelblue")
-    fig.suptitle("COVID-19 Total vs New Cases in India Over Time")
-    fig.tight_layout()
-    return {"image_base64": fig_to_base64(fig)}
+    plots = {}
 
-@router.get("/national/plot3")
-def plot_total_line():
-    df = fetch_india_covid_data()
-    fig, ax = plt.subplots(figsize=(14, 6))
-    sns.lineplot(data=df, x="Date", y="Total Cases", color="orange", ax=ax)
-    ax.set_title("Total COVID-19 Cases in India Over Time")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Total Cases")
-    ax.tick_params(axis='x', rotation=45)
-    ax.grid(True)
+    # Plot 1: Bar - New Cases (Last 30 days)
+    fig1, ax1 = plt.subplots(figsize=(14, 6))
+    ax1.bar(df_last_30["Date"], df_last_30["New Cases"], color='steelblue')
+    ax1.set_title("Daily New COVID-19 Cases (Last 30 Days)")
+    ax1.set_xlabel("Date")
+    ax1.set_ylabel("New Cases")
+    ax1.tick_params(axis='x', rotation=45)
+    fig1.tight_layout()
+    plots["new_cases_bar"] = fig_to_base64(fig1)
+
+    # Plot 2: Total vs New Cases (Dual Y-axis)
+    fig2, ax2 = plt.subplots(figsize=(14, 6))
+    ax2.plot(df["Date"], df["Total Cases"], color="orange")
+    ax2.set_ylabel("Total Cases", color="orange")
+    ax2b = ax2.twinx()
+    ax2b.plot(df["Date"], df["New Cases"], color="steelblue", alpha=0.6)
+    ax2b.set_ylabel("New Cases", color="steelblue")
+    fig2.suptitle("COVID-19 Total vs New Cases in India Over Time")
+    fig2.tight_layout()
+    plots["total_vs_new"] = fig_to_base64(fig2)
+
+    # Plot 3: Line - Total Cases
+    fig3, ax3 = plt.subplots(figsize=(14, 6))
+    sns.lineplot(data=df, x="Date", y="Total Cases", color="orange", ax=ax3)
+    ax3.set_title("Total COVID-19 Cases in India Over Time")
+    ax3.set_xlabel("Date")
+    ax3.set_ylabel("Total Cases")
+    ax3.tick_params(axis='x', rotation=45)
+    ax3.grid(True)
     import matplotlib.ticker as ticker
-    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'{x*1e-6:.0f}M'))
-    fig.tight_layout()
-    return {"image_base64": fig_to_base64(fig)}
+    ax3.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'{x*1e-6:.0f}M'))
+    fig3.tight_layout()
+    plots["total_cases_line"] = fig_to_base64(fig3)
 
-@router.get("/national/plot4")
-def plot_new_cases_line():
-    df = fetch_india_covid_data()
-    fig, ax = plt.subplots(figsize=(14, 6))
-    sns.lineplot(data=df, x="Date", y="New Cases", color="steelblue", ax=ax)
-    ax.set_title("Daily New COVID-19 Cases in India Over Time")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("New Cases")
-    ax.tick_params(axis='x', rotation=45)
-    ax.grid(True)
-    fig.tight_layout()
-    return {"image_base64": fig_to_base64(fig)}
+    # Plot 4: Line - New Cases
+    fig4, ax4 = plt.subplots(figsize=(14, 6))
+    sns.lineplot(data=df, x="Date", y="New Cases", color="steelblue", ax=ax4)
+    ax4.set_title("Daily New COVID-19 Cases in India Over Time")
+    ax4.set_xlabel("Date")
+    ax4.set_ylabel("New Cases")
+    ax4.tick_params(axis='x', rotation=45)
+    ax4.grid(True)
+    fig4.tight_layout()
+    plots["new_cases_line"] = fig_to_base64(fig4)
 
+    return plots

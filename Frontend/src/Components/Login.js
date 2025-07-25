@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
-import Home from './Dashboard'
-import '../Stylesheets/MyStyle.css';
-import Styles from '../Stylesheets/MyStyles.module.css'
+import Home from './DashboardDengue'
 import { Navigate } from 'react-router-dom'; 
 
 
@@ -71,8 +69,8 @@ export class Login extends Component {
         <label> Password</label>
         <input type = "password" value = {Password} onChange = {this.handlePasswordChange}/><br/><br/> 
         <button type = 'submit' > Login</button>
-        {blankError ? <p className="error">{blankError}</p> : null} {/* using stylesheet css */}
-        {loginError ? <p className={Styles.error}>{loginError}</p> : null} {/* using css module */}
+       
+         
       </form>
     </div>
     );

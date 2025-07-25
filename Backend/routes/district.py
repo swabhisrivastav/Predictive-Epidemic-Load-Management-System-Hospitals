@@ -4,6 +4,8 @@ from fastapi import APIRouter
 import sqlite3
 import pandas as pd
 import os
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import io
 import base64

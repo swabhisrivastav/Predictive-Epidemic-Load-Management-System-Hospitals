@@ -8,18 +8,121 @@ const HospitalResources = () => {
   const [timeRange, setTimeRange] = useState('7d');
   const [alertsVisible, setAlertsVisible] = useState(true);
 
-  // Sample data based on your dataset structure
-  const sampleData = [
-    { date: '2024-01-01', total_beds: 150, available_beds: 64, occupied_beds: 86, icu_beds: 25, available_icu_beds: 15, occupied_icu_beds: 10, total_ventilators: 15, available_ventilators: 9, used_ventilators: 6, total_oxygen_cylinders: 50, available_oxygen_cylinders: 39, used_oxygen_cylinders: 11, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 },
-    { date: '2024-01-02', total_beds: 150, available_beds: 78, occupied_beds: 72, icu_beds: 25, available_icu_beds: 18, occupied_icu_beds: 7, total_ventilators: 15, available_ventilators: 11, used_ventilators: 4, total_oxygen_cylinders: 50, available_oxygen_cylinders: 42, used_oxygen_cylinders: 8, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 },
-    { date: '2024-01-03', total_beds: 150, available_beds: 68, occupied_beds: 82, icu_beds: 25, available_icu_beds: 15, occupied_icu_beds: 10, total_ventilators: 15, available_ventilators: 9, used_ventilators: 6, total_oxygen_cylinders: 50, available_oxygen_cylinders: 38, used_oxygen_cylinders: 12, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 },
-    { date: '2024-01-04', total_beds: 150, available_beds: 53, occupied_beds: 97, icu_beds: 25, available_icu_beds: 15, occupied_icu_beds: 10, total_ventilators: 15, available_ventilators: 9, used_ventilators: 6, total_oxygen_cylinders: 50, available_oxygen_cylinders: 39, used_oxygen_cylinders: 11, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 },
-    { date: '2024-01-05', total_beds: 150, available_beds: 61, occupied_beds: 89, icu_beds: 25, available_icu_beds: 16, occupied_icu_beds: 9, total_ventilators: 15, available_ventilators: 10, used_ventilators: 5, total_oxygen_cylinders: 50, available_oxygen_cylinders: 39, used_oxygen_cylinders: 11, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 },
-    { date: '2024-01-06', total_beds: 150, available_beds: 57, occupied_beds: 93, icu_beds: 25, available_icu_beds: 15, occupied_icu_beds: 10, total_ventilators: 15, available_ventilators: 9, used_ventilators: 6, total_oxygen_cylinders: 50, available_oxygen_cylinders: 40, used_oxygen_cylinders: 10, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 },
-    { date: '2024-01-07', total_beds: 150, available_beds: 32, occupied_beds: 118, icu_beds: 25, available_icu_beds: 12, occupied_icu_beds: 13, total_ventilators: 15, available_ventilators: 8, used_ventilators: 7, total_oxygen_cylinders: 50, available_oxygen_cylinders: 36, used_oxygen_cylinders: 14, total_doctors: 12, available_doctors: 11, total_nurses: 35, available_nurses: 32, total_icu_nurses: 8, available_icu_nurses: 7, staff_reduction_factor: 0.925 }
-  ];
+  const [currentData, setCurrentData] = useState(null);
+  const [trendDataRaw, setTrendDataRaw] = useState([]); // raw API data
+  const [trendData, setTrendData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const currentData = sampleData[sampleData.length - 1];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('Starting API calls...');
+        
+        // Fetch latest with better error handling
+        const latestResponse = await fetch('http://localhost:8002/api/resources/hospital-resources/latest');
+        console.log('Latest response status:', latestResponse.status);
+        
+        if (!latestResponse.ok) {
+          throw new Error(`Latest API failed: ${latestResponse.status} ${latestResponse.statusText}`);
+        }
+        
+        const latestData = await latestResponse.json();
+        console.log('Latest data received:', latestData);
+        setCurrentData(latestData);
+
+        // Fetch trend (last 30 days)
+        const trendResponse = await fetch('http://localhost:8002/api/resources/hospital-resources/trend');
+        console.log('Trend response status:', trendResponse.status);
+        
+        if (!trendResponse.ok) {
+          throw new Error(`Trend API failed: ${trendResponse.status} ${trendResponse.statusText}`);
+        }
+        
+        const trendDataResponse = await trendResponse.json();
+        console.log('Trend data received:', trendDataResponse);
+        
+        setTrendDataRaw(trendDataResponse);
+        
+        // Transform trend data for charting
+        const transformed = trendDataResponse.map(item => ({
+          date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          bedOccupancy: (item.occupied_beds / item.total_beds) * 100,
+          icuOccupancy: (item.occupied_icu_beds / item.icu_beds) * 100,
+          ventilatorUsage: (item.used_ventilators / item.total_ventilators) * 100,
+          oxygenUsage: (item.used_oxygen_cylinders / item.total_oxygen_cylinders) * 100,
+          availableStaff: item.total_doctors + item.total_nurses + item.total_icu_nurses,
+          staffReduction: (1 - item.staff_reduction_factor) * 100
+        }));
+        
+        console.log('Transformed data:', transformed);
+        setTrendData(transformed);
+        
+      } catch (error) {
+        console.error("API Error:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6" style={{ marginLeft: "300px"}}>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading hospital data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6" style={{ marginLeft: "300px"}}>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Data</h2>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no data
+  if (!currentData) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6" style={{ marginLeft: "300px"}}>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-600">No hospital data available</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate utilization rates
   const bedUtilization = ((currentData.occupied_beds / currentData.total_beds) * 100).toFixed(1);
@@ -44,17 +147,6 @@ const HospitalResources = () => {
     { name: 'Available ICU', value: currentData.available_icu_beds, color: '#3B82F6' },
     { name: 'Occupied ICU', value: currentData.occupied_icu_beds, color: '#F59E0B' },
   ];
-
-  // Trend data for charts
-  const trendData = sampleData.map(item => ({
-    date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    bedOccupancy: (item.occupied_beds / item.total_beds) * 100,
-    icuOccupancy: (item.occupied_icu_beds / item.icu_beds) * 100,
-    ventilatorUsage: (item.used_ventilators / item.total_ventilators) * 100,
-    oxygenUsage: (item.used_oxygen_cylinders / item.total_oxygen_cylinders) * 100,
-    availableStaff: item.total_doctors + item.total_nurses + item.total_icu_nurses,
-    staffReduction: (1 - item.staff_reduction_factor) * 100
-  }));
 
   const MetricCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
     <div className="bg-white rounded-xl shadow-lg p-6 border-l-4" style={{ borderLeftColor: color  }}>
@@ -95,12 +187,12 @@ const HospitalResources = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6" style={{ marginLeft: "700px"}} >
+    <div className="min-h-screen bg-gray-50 p-6" style={{ marginLeft: "300px"}} >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Hospital Resource Management</h1>
-          <p className="text-gray-600">Real-time monitoring and predictive analytics for optimal resource allocation</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Hospital Resources</h1>
+    
         </div>
 
         {/* Controls */}
@@ -115,19 +207,6 @@ const HospitalResources = () => {
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
               <option value="90d">Last 90 days</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-gray-400" />
-            <select 
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={selectedMetric}
-              onChange={(e) => setSelectedMetric(e.target.value)}
-            >
-              <option value="beds">Bed Management</option>
-              <option value="icu">ICU Resources</option>
-              <option value="equipment">Equipment</option>
-              <option value="staff">Staff Management</option>
             </select>
           </div>
         </div>
