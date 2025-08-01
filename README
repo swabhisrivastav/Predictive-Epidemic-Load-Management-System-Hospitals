@@ -1,4 +1,4 @@
-# Predictive Epidemic Load Management System
+# Epiguard : A Predictive Epidemic Load Management System
 
 This project is a  full-stack system designed to enable early detection, forecasting, and resource preparedness during epidemic or pandemic situations such as COVID-19. The platform supports health officials and hospitals in making data-driven decisions using predictive analytics and visualizations.
 
@@ -11,8 +11,16 @@ It can be deployed by health departments, research institutions, or hospitals fo
 - Frontend: React.js and tailwind css.
 - Backend: FastAPI (Python).
 - Database: SQLite.
-- Machine Learning:  ARIMA for time-series forecasting, Ensemble model (Random Forest,Linear Regression, Gradient Boosting).
+- Machine Learning:  ARIMA for time-series forecasting, Ensemble model (Random Forest,Linear Regression, Gradient Boosting) for case predictions.
 - LLama LLM via groq API for AI bot.
+
+Dataset Overview
+
+- National COVID Data: Daily cases  from Government API . 
+- District COVID Data: Daily hospitalized data from Kaggle (2020) . 
+- Dengue Data: Weekly cases (2020–2025) with rainfall & seasonality from national vector health db. 
+- Hospital Data: Mock data with real-world parameters for 2 years.
+
 
  Features:
 
