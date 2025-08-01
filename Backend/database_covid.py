@@ -21,7 +21,15 @@ def init_db_covid():
             predicted_cases INTEGER
         )
         """)
-        
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS bangalore_cases (
+            date TIMESTAMP PRIMARY KEY,
+            hospitalized INTEGER,
+            recovered INTEGER,
+            deceased INTEGER
+         );
+
+         """)
         conn.execute("""
         CREATE TABLE IF NOT EXISTS user (
             hospital_id INTEGER PRIMARY KEY AUTOINCREMENT,
