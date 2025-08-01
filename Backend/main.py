@@ -6,10 +6,13 @@ from routes import national, district,dengue,resources,overload,recommendations
 from database import init_db
 from fastapi.staticfiles import StaticFiles  # Add this for graph endpoint
 from routes import auth
+from database_covid import init_db_covid
+
 app = FastAPI()
 
 # Initialize database
 init_db()
+init_db_covid()
 
 # Allow frontend access
 app.add_middleware(
