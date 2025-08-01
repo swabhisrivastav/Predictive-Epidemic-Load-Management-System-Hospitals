@@ -1,29 +1,51 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import {Shield} from 'lucide-react';
 
 const Sidebar = () => {
+  const location = useLocation();
   const [activeItem, setActiveItem] = useState("home");
-
-  // Function to determine active item based on current URL
+  const isCovidDashboard = location.pathname === "/covid";
+  const isNationalDashboard = location.pathname === "/national";
+  const isDistrictDashboard = location.pathname === "/district";
   const getActiveItemFromUrl = () => {
-    const path = window.location.pathname;
+    const path = location.pathname;
     if (path === "/national") return "national";
     if (path === "/district") return "district";
     if (path === "/hospital") return "hospital";
     if (path === "/AddResource") return "resources";
-    return "home"; // default to home
+    return "home";
   };
 
-  // Set active item based on current URL when component mounts
   useEffect(() => {
     setActiveItem(getActiveItemFromUrl());
-  }, []);
+  }, [location.pathname]);
 
   const menuItems = [
     { id: "home", label: "Home", icon: "🏠", href: "/" },
-    { id: "national", label: "National Trend", icon: "📊", href: "/national" },
-    { id: "district", label: "District Trend", icon: "🏙️", href: "/district" },
+    ...(isCovidDashboard || isNationalDashboard ||  isDistrictDashboard
+      ? [
+          {
+            id: "national",
+            label: "National Trend",
+            icon: "📊",
+            href: "/national",
+          },
+          {
+            id: "district",
+            label: "District Trend",
+            icon: "🏙️",
+            href: "/district",
+          },
+        ]
+      : []),
     { id: "hospital", label: "My Hospital", icon: "🏥", href: "/hospital" },
-    { id: "resources", label: "Add Resources", icon: "⚕️", href: "/AddResource" }
+    {
+      id: "resources",
+      label: "Add Resources",
+      icon: "⚕️",
+      href: "/AddResource",
+    },
   ];
 
   return (
@@ -32,13 +54,14 @@ const Sidebar = () => {
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-lg">⚕</span>
+            {/* <span className="text-white font-bold text-lg"></span> */}
+            <Shield className="w-8 h-8 text-white" />
           </div>
           <div>
             <h1 className="text-white font-bold text-lg leading-tight">
-              Epidemic Load
+              EpiGuard
             </h1>
-            <p className="text-slate-400 text-sm">Management System</p>
+            <p className="text-slate-400 text-sm">Epidemic Load Management System</p>
           </div>
         </div>
       </div>
@@ -52,16 +75,16 @@ const Sidebar = () => {
                 href={item.href}
                 onClick={() => {
                   setActiveItem(item.id);
-                  // Update active item after navigation
                   setTimeout(() => {
                     setActiveItem(getActiveItemFromUrl());
                   }, 100);
                 }}
                 className={`
                   flex items-center px-4 py-3 rounded-lg transition-all duration-200 group
-                  ${activeItem === item.id
-                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                  ${
+                    activeItem === item.id
+                      ? "bg-blue-600 text-white shadow-lg transform scale-105"
+                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
                   }
                 `}
               >

@@ -9,25 +9,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import io
 import base64
-
-
-router = APIRouter()
-
-@router.get("/district/bangalore")
-def get_bangalore_data():
-    # Define the database path (adjust if needed)
-    db_path = os.path.join(os.path.dirname(__file__), "../db/covid_data.db")
-    
-    # Connect to SQLite and load data
-    conn = sqlite3.connect(db_path)
-    df = pd.read_sql_query("SELECT * FROM bangalore_cases ORDER BY date", conn)
-    conn.close()
-    
-    # Convert datetime to string format for JSON serialization
-    df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
-
-    # Return as JSON list
-    return df.to_dict(orient="records")
+from forecasting_covid import CovidForecastModel
+import joblib
+import numpy as np
+import sqlite3
+router = APIRouter(
+     tags=["covid"]
+)
 
 @router.get("/district/bangalore/summary")
 def get_bangalore_summary():
@@ -119,8 +107,43 @@ def all_bangalore_plots():
 
     return images
 
+@router.get("/predict")
+def predict():
+    if os.path.exists("covid_forecaster.pkl"):
+        forecaster = joblib.load("covid_forecaster.pkl")
+        result = forecaster.get_forecast()
+        return {
+            "status": "success",
+            "source": "cache",
+            "predictions": result["forecasts"]
+        }
 
+    else:
+        conn = sqlite3.connect("db/covid_data.db")
+        df = pd.read_sql("SELECT date, hospitalized FROM bangalore_cases", conn)
+        conn.close()
 
+        forecaster = CovidForecastModel()
+        forecaster.run_pipeline(df)
+        result = forecaster.get_forecast()  
+        forecaster.save_predictions_to_db(result["forecasts"])
+        joblib.dump(forecaster, "covid_forecaster.pkl")
 
+        #  Save to DB
+        forecaster.save_predictions_to_db(result["forecasts"])
 
+        return {
+            "status": "success",
+            "source": "fresh_model",
+            "predictions": result["forecasts"]
+        }
+
+@router.get("/forecast_plot")
+def predict_plot():
+    if os.path.exists("covid_forecaster.pkl"):
+        forecaster = joblib.load("covid_forecaster.pkl")
+        base64_img = forecaster.get_covid_forecast_plot()  # returns base64-encoded PNG
+        return {"status": "success", "image_base64": base64_img}
+    else:
+        return {"status": "error", "message": "Forecast not available yet."}
 

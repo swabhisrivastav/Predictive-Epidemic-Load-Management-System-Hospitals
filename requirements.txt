@@ -5,6 +5,7 @@ uvicorn[standard]
 #Database 
 sqlalchemy
 pydantic
+bcrypt
 
 
 #ML & Data Science

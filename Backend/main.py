@@ -2,10 +2,10 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import national, district,dengue,resources
+from routes import national, district,dengue,resources,overload,recommendations
 from database import init_db
 from fastapi.staticfiles import StaticFiles  # Add this for graph endpoint
-
+from routes import auth
 app = FastAPI()
 
 # Initialize database
@@ -28,6 +28,9 @@ app.include_router(national.router, prefix="/api")
 app.include_router(district.router, prefix="/api")
 app.include_router(dengue.router, prefix = "/api")
 app.include_router(resources.router, prefix = "/api")
+app.include_router(overload.router, prefix = "/api")
+app.include_router(recommendations.router, prefix = "/api")
+app.include_router(auth.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup():

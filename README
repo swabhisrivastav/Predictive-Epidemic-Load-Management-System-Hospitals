@@ -8,24 +8,22 @@ It can be deployed by health departments, research institutions, or hospitals fo
 
  Tech Stack:
 
-- Frontend: React.js, Chart.js/D3.js for visualizations, MDBootstrap for UI
-- Backend: FastAPI (Python)
-- Database: SQL 
-- Machine Learning: Prophet, ARIMA for time-series forecasting, Random forest Regression for prediction
+- Frontend: React.js and tailwind css.
+- Backend: FastAPI (Python).
+- Database: SQLite.
+- Machine Learning:  ARIMA for time-series forecasting, Ensemble model (Random Forest,Linear Regression, Gradient Boosting).
+- LLama LLM via groq API for AI bot.
 
  Features:
 
 - Forecasting of infection spikes at national and district levels
 -  Hospital-level dashboard for ICU beds, ventilators, oxygen supply, and staff tracking
 -  ML-based time-series forecasting (Prophet/ARIMA)
-- Overload Prediction & Alerting: Identifies potential overload scenarios by forecasting spikes in admissions or resource exhaustion and triggers early warnings by using ML model.
+- Overload Prediction & Alerting: Identifies potential overload scenarios by forecasting spikes in cases or resource exhaustion and triggers early warnings by using ML model.
 - Hospital Load Management: Provides visibility into bed availability,ICU load, ventilator usage, and staff capacity to support efficient hospital-level decision-making.
+- AI powered recommendations and insight on overload situation.
 
-Future Work pending:
 
-- Need to integrate ML models with Frontend and backend.
-- Complete Backend integration.
-- Deployment.
 
 
 

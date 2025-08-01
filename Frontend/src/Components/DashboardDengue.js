@@ -7,22 +7,20 @@ const Dengue_Dashboard = () => {
   const [plotImage, setPlotImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentData, setCurrentData] = useState(null);
+  const [overloadData, setOverloadData] = useState(null);
 
-  // Dummy hospital data (until integration)
-  const hospitalResources = {
-    icu_beds: { available: 25, total: 50, utilization: 50 },
-    ventilators: { available: 18, total: 30, utilization: 40 },
-    oxygen_cylinders: { available: 85, total: 120, utilization: 29 },
-    doctors: { available: 12, total: 20, utilization: 40 },
-    nurses: { available: 35, total: 60, utilization: 42 }
+  //const overloadPrediction = {
+   // risk_level: "moderate",
+    //risk_score: 65,
+    //days_to_overload: 5,
+   // critical_resources: ["ICU Beds", "Ventilators"]
+  //};
+  const overloadPrediction = overloadData || {
+    risk: "loading",
+    days_to_overload: null,
+    critical_resources: []
   };
 
-  const overloadPrediction = {
-    risk_level: "moderate",
-    risk_score: 65,
-    days_to_overload: 5,
-    critical_resources: ["ICU Beds", "Ventilators"]
-  };
 
   useEffect(() => {
     // Fetch current dengue cases
@@ -50,6 +48,7 @@ const Dengue_Dashboard = () => {
         console.error("Failed to fetch dengue plot", err);
         setLoading(false);
       });
+      // fetch hospital resources
      fetch('http://localhost:8002/api/resources/hospital-resources/latest')
     .then(response => response.json())
     .then(data => {
@@ -83,14 +82,23 @@ const Dengue_Dashboard = () => {
       setCurrentData(transformed);
     })
     .catch(error => console.error("Failed to fetch hospital resource data:", error));
+
+    // fetch overload
+    fetch("http://localhost:8002/api/overload/overload_risk")
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to fetch overload data");
+      return res.json();
+    })
+    .then((data) => setOverloadData(data))
+    .catch((err) => console.error("Overload API error:", err));
+
   }, []);
 
-  const getRiskColor = (level) => {
-    switch (level) {
+  const getRiskColor = (risk) => {
+    switch (risk) {
       case "low": return "text-green-600 bg-green-50 border-green-200";
       case "moderate": return "text-yellow-600 bg-yellow-50 border-yellow-200";
       case "high": return "text-orange-600 bg-orange-50 border-orange-200";
-      case "critical": return "text-red-600 bg-red-50 border-red-200";
       default: return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
@@ -195,14 +203,16 @@ const Dengue_Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Risk Level</p>
-                <p className={`text-2xl font-bold capitalize ${overloadPrediction.risk_level === 'moderate' ? 'text-yellow-600' : 'text-gray-900'}`}>
-                  {overloadPrediction.risk_level}
+                <p className={`text-2xl font-bold capitalize ${getRiskColor(overloadPrediction.risk)}`}>
+                {overloadPrediction.risk}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">Overload risk</p>
               </div>
-              <div className="p-3 bg-yellow-50 rounded-full">
-                <AlertTriangle className="h-6 w-6 text-yellow-600" />
-              </div>
+              <div className="p-3 bg-yellow-50 rounded-full flex items-center justify-center">
+              {overloadPrediction.risk !== 'low' && (
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              )}
+            </div>
             </div>
           </div>
 
@@ -327,9 +337,6 @@ const Dengue_Dashboard = () => {
             <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Hospital Resources</h3>
-                <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
-                  View Details <ChevronRight className="h-4 w-4 ml-1" />
-                </button>
               </div>
               <div className="space-y-4">
                 {currentData && Object.entries(currentData).map(([key, resource]) => (
@@ -368,13 +375,14 @@ const Dengue_Dashboard = () => {
             {/* Overload Prediction */}
             <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Overload Prediction</h3>
-              <div className={`p-4 rounded-lg border-2 ${getRiskColor(overloadPrediction.risk_level)} mb-4`}>
+              <div className={`p-4 rounded-lg border-2 ${getRiskColor(overloadPrediction.risk)} mb-4`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <AlertTriangle className="h-5 w-5 mr-2" />
-                    <span className="font-semibold capitalize">{overloadPrediction.risk_level} Risk</span>
+                    {overloadPrediction.risk !== 'low' && (
+                      <AlertTriangle className="h-5 w-5 mr-2 text-yellow-600" />
+                     )}
+                    <span className="font-semibold capitalize">{overloadPrediction.risk} Risk</span>
                   </div>
-                  <span className="text-sm font-medium">{overloadPrediction.risk_score}%</span>
                 </div>
                 <p className="text-sm mt-2">
                   Predicted overload in {overloadPrediction.days_to_overload} days at current rate
@@ -392,40 +400,6 @@ const Dengue_Dashboard = () => {
                       {resource}
                     </span>
                   ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Recommendations */}
-            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommendations</h3>
-              <div className="space-y-3">
-                <div className="flex items-start p-3 bg-blue-50 rounded-lg">
-                  <div className="p-1 bg-blue-100 rounded-full mr-3 mt-0.5">
-                    <ChevronRight className="h-3 w-3 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">Increase ICU Capacity</p>
-                    <p className="text-xs text-blue-700">Consider converting general beds to ICU beds</p>
-                  </div>
-                </div>
-                <div className="flex items-start p-3 bg-yellow-50 rounded-lg">
-                  <div className="p-1 bg-yellow-100 rounded-full mr-3 mt-0.5">
-                    <ChevronRight className="h-3 w-3 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-yellow-900">Staff Reallocation</p>
-                    <p className="text-xs text-yellow-700">Prepare additional nursing staff for dengue ward</p>
-                  </div>
-                </div>
-                <div className="flex items-start p-3 bg-green-50 rounded-lg">
-                  <div className="p-1 bg-green-100 rounded-full mr-3 mt-0.5">
-                    <ChevronRight className="h-3 w-3 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-green-900">Preventive Measures</p>
-                    <p className="text-xs text-green-700">Implement community awareness programs</p>
-                  </div>
                 </div>
               </div>
             </div>

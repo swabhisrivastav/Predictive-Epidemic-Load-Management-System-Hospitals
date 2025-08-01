@@ -10,14 +10,16 @@ import requests
 import os
 from dotenv import load_dotenv
 
-router = APIRouter()
+router = APIRouter(
+     tags=["covid"]
+)
 
 @router.get("/national/summary")
 def get_national_summary():
     url = "https://api.api-ninjas.com/v1/covid19?country=India"
     load_dotenv()
     API_KEY = os.getenv("NATIONAL_API_KEY")
-    headers = {"X-Api-Key": "API_KEY"}  
+    headers = {"X-Api-Key": API_KEY}  
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
