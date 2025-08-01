@@ -1,0 +1,16 @@
+# Ignore environment variables
+.env
+
+# Ignore database files (both in root and /db)
+covid_data.db
+db/*.db
+
+# Ignore compiled Python files
+__pycache__/
+*.py[cod]
+
+# Ignore model folders (optional, if generated)
+static/
+data/
+
+
