@@ -14,7 +14,7 @@ It can be deployed by health departments, research institutions, or hospitals fo
 - Machine Learning:  ARIMA for time-series forecasting, Ensemble model (Random Forest,Linear Regression, Gradient Boosting) for case predictions.
 - LLama LLM via groq API for AI bot.
 
-Dataset Overview
+Dataset Overview  (not uploaded to size constraints)
 
 - National COVID Data: Daily cases  from Government API . 
 - District COVID Data: Daily hospitalized data from Kaggle (2020) . 
@@ -25,11 +25,37 @@ Dataset Overview
  Features:
 
 - Forecasting of infection spikes at national and district levels
--  Hospital-level dashboard for ICU beds, ventilators, oxygen supply, and staff tracking
--  ML-based time-series forecasting (Prophet/ARIMA)
+- Hospital-level dashboard for ICU beds, ventilators, oxygen supply, and staff tracking
+- ML-based time-series forecasting (Prophet/ARIMA)
 - Overload Prediction & Alerting: Identifies potential overload scenarios by forecasting spikes in cases or resource exhaustion and triggers early warnings by using ML model.
 - Hospital Load Management: Provides visibility into bed availability,ICU load, ventilator usage, and staff capacity to support efficient hospital-level decision-making.
 - AI powered recommendations and insight on overload situation.
+
+ How to Run: 
+
+1.Install dependencies 
+   Run the following command in the root directory:
+   pip install -r requirements.txt 
+2.get groq api key and add it to your .env file or as an environment variable:
+3.Start Backend (FastAPI + ML Models)
+  command : uvicorn backend.main:app --reload
+  This initializes the database and starts API endpoints.
+4.Start Frontend (React App)
+  Navigate to the frontend directory and run :
+  npm install
+  npm start
+
+Future Scope 
+- Expand to support more diseases and outbreak scenarios
+- Conversational AI assistant for hospital staff
+- Department-wise resource analytics and visualizations
+- Integration with government alert systems and logistics
+
+
+   
+
+
+
 
 
 
